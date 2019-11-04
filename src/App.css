@@ -19,6 +19,7 @@ body {
     position: relative;
     background-color: black;
     font-family: 'Noto sans', sans-serif;
+    font-size: large;
 }
 
 header {
@@ -88,7 +89,7 @@ nav li.active {
 
 .form > input {
     display: block;
-    border: 1px rgba(0,0,0,0.5) solid;
+    border: 1px rgba(0, 0, 0, 0.5) solid;
     padding: 0.1em;
 }
 
@@ -100,9 +101,69 @@ nav li.active {
     background-color: #ccc;
 }
 
+main > ul {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    list-style: none;
+}
+
+main > ul:first-child {
+    margin-top: 0.2rem;
+}
+
+.todo {
+    flex: 1 1 3rem;
+    max-width: 768px;
+    margin: 0.2rem;
+    padding: 0.5rem;
+    display: grid;
+    grid-template-areas: 'name' 'due-date' 'description';
+}
+
+.todo.priority-1 {
+    background-color: rgba(255, 255, 255, 0.7);
+}
+
+.todo.priority-2 {
+    background-color: rgba(255, 255, 255, 0.75);
+}
+
+.todo.priority-3 {
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.todo.priority-4 {
+    background-color: rgba(255, 255, 255, 0.85);
+}
+
+.todo.priority-5 {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.todo .name {
+    grid-area: name;
+}
+
+.todo .description {
+    color: #444;
+    grid-area: description;
+}
+
+.todo .dueDate {
+    grid-area: due-date;
+}
+
 @media screen and (min-width: 768px) {
     header {
         grid-template-columns: 1fr 3fr;
         grid-template-areas: 'name navigation';
+    }
+
+    .todo {
+        grid-template-areas: 'name due-date' 'description description';
+        grid-template-columns: 4fr 1fr;
     }
 }
