@@ -50,7 +50,12 @@ ProjectDialogue.defaultProps = {name: ''};
 const TodoDialogue = (props) =>
     <div className='veil'>
         <Formik
-            initialValues={{name: props.name, description: props.description, dueDate: props.dueDate, priority: props.priority}}
+            initialValues={{
+                name: props.name,
+                description: props.description,
+                dueDate: props.dueDate,
+                priority: props.priority,
+            }}
             validate={values => {
                 const errors = {};
                 if (!values.name) errors.name = '^ name required';
@@ -118,6 +123,14 @@ const TodoDialogue = (props) =>
     </div>;
 TodoDialogue.defaultProps = {name: '', description: '', dueDate: '', priority: 3};
 
+const ListProjects = (props) => props.projects.map((project, index) =>
+    <Project
+        active={project === props.activeProject}
+        name={project.name}
+        handleActiveClick={props.editProject}
+        handleClick={props.handleSwitchProject(project)}
+        index={index}
+    />);
 const Project = (props) => props.active ?
     <li
         className='active'
@@ -132,15 +145,47 @@ const Project = (props) => props.active ?
     >
         {props.name}
     </li>;
+const ProjectAdder = (props) =>
+    <li
+        id='new-project'
+        onClick={props.handleClick}
+        key={(Date.now() - 1).toString(36)}
+    >
+        + project
+    </li>;
+
+const ListTodos = (props) => props.todos.map((todo, index) =>
+    <Todo
+        name={todo.name}
+        description={todo.description}
+        dueDate={todo.dueDate}
+        priority={todo.priority}
+        handleClick={props.handleEditTodo(todo)}
+        handleDelete={props.handleDeleteTodo(todo)}
+        index={index}
+    />);
 const Todo = (props) =>
     <li
         className={'todo priority-' + props.priority}
-        onClick={props.handleClick}
         key={(Date.now() + props.index).toString(36)}
     >
+        <div className='delete' onClick={props.handleDelete}/>
+        <div
+            className='todo-body'
+            onClick={props.handleClick}
+        >
         <div className='name'>{props.name}</div>
         <div className='description'>{props.description}</div>
         <div className='due-date'>{props.dueDate}</div>
+        </div>
+    </li>;
+const TodoAdder = (props) =>
+    <li
+        className='todo priority-5'
+        onClick={props.handleClick}
+        key={(Date.now() - 1).toString(36)}
+    >
+        + todo
     </li>;
 
 const App = () => {
@@ -169,9 +214,9 @@ const App = () => {
         setProjects(newProjects);
         cancelEditProject();
     };
-    const switchProject = project => () => setActiveProject(project);
+    const handleSwitchProject = project => () => setActiveProject(project);
 
-    const editTodo = todo => () => setTodoUnderEdit(todo);
+    const handleEditTodo = todo => () => setTodoUnderEdit(todo);
     const cancelEditTodo = () => setTodoUnderEdit(null);
     const addTodo = (name, description, dueDate, priority) => {
         const newProjects = projects.slice();
@@ -190,6 +235,14 @@ const App = () => {
         setActiveProject(newProject);
         cancelEditTodo();
     };
+    const handleDeleteTodo = todo => () => {
+        const newProjects = projects.slice();
+        const newProject = newProjects.find(project => project === activeProject);
+        newProject.list.splice(newProject.list.findIndex(item => item === todo), 1);
+        setProjects(newProjects);
+        setActiveProject(newProject);
+        cancelEditTodo();
+    };
 
     return (
         <>
@@ -197,44 +250,25 @@ const App = () => {
                 <div id='app-name'>To-do</div>
                 <nav>
                     <ul>
-                        {projects.map((project, index) =>
-                            <Project
-                                active={project === activeProject}
-                                name={project.name}
-                                handleActiveClick={editProject}
-                                handleClick={switchProject(project)}
-                                index={index}
-                            />)
-                        }
-                        <li
-                            id='new-project'
-                            onClick={toggleProjectDialogue}
-                            key={(Date.now() - 1).toString(36)}
-                        >
-                            + project
-                        </li>
+                        <ListProjects
+                            activeProject={activeProject}
+                            projects={projects}
+                            editProject={editProject}
+                            handleSwitchProject={handleSwitchProject}
+                        />
+                        <ProjectAdder handleClick={toggleProjectDialogue}/>
                     </ul>
                 </nav>
             </header>
             <main>
                 <ul>
-                    {activeProject && activeProject.list.map((todo, index) =>
-                        <Todo
-                            name={todo.name}
-                            description={todo.description}
-                            dueDate={todo.dueDate}
-                            priority={todo.priority}
-                            handleClick={editTodo(todo)}
-                            index={index}
-                        />)
-                    }
-                    {activeProject && <li
-                        className='todo priority-5'
-                        onClick={toggleTodoDialogue}
-                        key={(Date.now() - 1).toString(36)}
-                    >
-                        + todo
-                    </li>}
+                    {activeProject
+                    && <ListTodos
+                        todos={activeProject.list}
+                        handleEditTodo={handleEditTodo}
+                        handleDeleteTodo={handleDeleteTodo}
+                    />}
+                    {activeProject && <TodoAdder handleClick={toggleTodoDialogue}/>}
                 </ul>
             </main>
             {projectDialogue && <ProjectDialogue

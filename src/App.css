@@ -15,6 +15,11 @@ html, body {
     height: 100%;
 }
 
+::-webkit-scrollbar {
+    width: 0;
+    background: transparent;
+}
+
 body {
     position: relative;
     background-color: black;
@@ -116,9 +121,25 @@ main > ul:first-child {
 
 .todo {
     flex: 1 1 3rem;
-    max-width: 768px;
+    display: flex;
     margin: 0.2rem;
     padding: 0.5rem;
+    max-width: 768px;
+}
+
+.todo .delete {
+    background-color: white;
+    width: 2rem;
+    height: 2rem;
+    border: 3px black solid;
+}
+
+.todo .delete:hover {
+    background-color: #ffb3de;
+}
+
+.todo-body {
+    margin-left: 1rem;
     display: grid;
     grid-template-areas: 'name' 'due-date' 'description';
 }
@@ -143,17 +164,17 @@ main > ul:first-child {
     background-color: rgba(255, 255, 255, 0.9);
 }
 
-.todo .name {
+.todo-body .name {
     grid-area: name;
 }
 
-.todo .description {
-    color: #444;
-    grid-area: description;
+.todo-body .dueDate {
+    grid-area: due-date;
 }
 
-.todo .dueDate {
-    grid-area: due-date;
+.todo-body .description {
+    color: #444;
+    grid-area: description;
 }
 
 @media screen and (min-width: 768px) {
@@ -162,7 +183,7 @@ main > ul:first-child {
         grid-template-areas: 'name navigation';
     }
 
-    .todo {
+    .todo-body {
         grid-template-areas: 'name due-date' 'description description';
         grid-template-columns: 4fr 1fr;
     }
