@@ -106,6 +106,13 @@ nav li.active {
     background-color: #ccc;
 }
 
+.query-box {
+    background-color: white;
+    display: block;
+    margin: 1rem auto;
+    padding: 1rem;
+}
+
 main > ul {
     height: 100%;
     display: flex;
@@ -113,10 +120,6 @@ main > ul {
     justify-content: space-around;
     align-items: center;
     list-style: none;
-}
-
-main > ul:first-child {
-    margin-top: 0.2rem;
 }
 
 .todo {

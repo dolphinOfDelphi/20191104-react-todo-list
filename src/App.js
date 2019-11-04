@@ -174,9 +174,9 @@ const Todo = (props) =>
             className='todo-body'
             onClick={props.handleClick}
         >
-        <div className='name'>{props.name}</div>
-        <div className='description'>{props.description}</div>
-        <div className='due-date'>{props.dueDate}</div>
+            <div className='name'>{props.name}</div>
+            <div className='description'>{props.description}</div>
+            <div className='due-date'>{props.dueDate}</div>
         </div>
     </li>;
 const TodoAdder = (props) =>
@@ -192,9 +192,10 @@ const App = () => {
     const [projects, setProjects] = React.useState([project('Default')]);
     const [activeProject, setActiveProject] = React.useState(null);
     const [editingProject, setEditingProject] = React.useState(false);
-    const [todoUnderEdit, setTodoUnderEdit] = React.useState(null);
     const [projectDialogue, setProjectDialogue] = React.useState(false);
+    const [todoUnderEdit, setTodoUnderEdit] = React.useState(null);
     const [todoDialogue, setTodoDialogue] = React.useState(false);
+    const [query, setQuery] = React.useState('');
 
     const toggleProjectDialogue = () => setProjectDialogue(!projectDialogue);
     const toggleTodoDialogue = () => setTodoDialogue(!todoDialogue);
@@ -244,6 +245,14 @@ const App = () => {
         cancelEditTodo();
     };
 
+    const handleQueryChange = (event) => setQuery(event.target.value);
+    const filterTodos = () => {
+        const lowerCaseQuery = query.toLowerCase();
+        return activeProject.list.filter(todo =>
+            todo.name.toLowerCase().includes(lowerCaseQuery)
+            || todo.description.toLowerCase().includes(lowerCaseQuery));
+    };
+
     return (
         <>
             <header>
@@ -261,14 +270,26 @@ const App = () => {
                 </nav>
             </header>
             <main>
+                <input
+                    className='query-box'
+                    type='text'
+                    placeholder='query'
+                    onChange={handleQueryChange}
+                />
                 <ul>
                     {activeProject
-                    && <ListTodos
-                        todos={activeProject.list}
-                        handleEditTodo={handleEditTodo}
-                        handleDeleteTodo={handleDeleteTodo}
-                    />}
-                    {activeProject && <TodoAdder handleClick={toggleTodoDialogue}/>}
+                    && (query ?
+                        <ListTodos
+                            todos={filterTodos()}
+                            handleEditTodo={handleEditTodo}
+                            handleDeleteTodo={handleDeleteTodo}
+                        />
+                        : <ListTodos
+                            todos={activeProject.list}
+                            handleEditTodo={handleEditTodo}
+                            handleDeleteTodo={handleDeleteTodo}
+                        />)}
+                    {activeProject && !query && <TodoAdder handleClick={toggleTodoDialogue}/>}
                 </ul>
             </main>
             {projectDialogue && <ProjectDialogue
