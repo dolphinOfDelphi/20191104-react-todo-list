@@ -5,6 +5,125 @@ import './App.css';
 const project = (name) => ({name, list: []});
 const todo = (name, description, dueDate, priority) => ({name, description, dueDate, priority});
 
+const SortForm = (props) => <form>
+    <input
+        id='name'
+        className='sort'
+        type='radio'
+        name='sort-by'
+        value='name'
+        checked={props.sortBy === 'name'}
+        onChange={props.handleChange}
+    />
+    <label
+        className='sort'
+        htmlFor='name'
+    >
+        Name
+    </label>
+    <input
+        id='due-date'
+        className='sort'
+        type='radio'
+        name='sort-by'
+        value='dueDate'
+        checked={props.sortBy === 'dueDate'}
+        onChange={props.handleChange}
+    />
+    <label
+        className='sort'
+        htmlFor='due-date'
+    >
+        Due Date
+    </label>
+    <input
+        id='priority'
+        className='sort'
+        type='radio'
+        name='sort-by'
+        value='priority'
+        checked={props.sortBy === 'priority'}
+        onChange={props.handleChange}
+    />
+    <label
+        className='sort'
+        htmlFor='priority'
+    >
+        Priority
+    </label>
+</form>;
+const Query = (props) => <input
+    id='query-box'
+    type='text'
+    placeholder='query'
+    onChange={props.handleChange}
+/>;
+
+const ListProjects = (props) => props.projects.map((project, index) =>
+    <Project
+        active={project === props.activeProject}
+        name={project.name}
+        handleActiveClick={props.editProject}
+        handleClick={props.handleSwitchProject(project)}
+        index={index}
+    />);
+const Project = (props) => props.active ?
+    <li
+        className='active'
+        onClick={props.handleActiveClick}
+        key={(Date.now() + props.index).toString(36)}
+    >
+        {props.name}
+    </li>
+    : <li
+        onClick={props.handleClick}
+        key={(Date.now() + props.index).toString(36)}
+    >
+        {props.name}
+    </li>;
+const ProjectAdder = (props) =>
+    <li
+        id='new-project'
+        onClick={props.handleClick}
+        key={(Date.now() - 1).toString(36)}
+    >
+        + project
+    </li>;
+
+const ListTodos = (props) => props.todos.map((todo, index) =>
+    <Todo
+        name={todo.name}
+        description={todo.description}
+        dueDate={todo.dueDate}
+        priority={todo.priority}
+        handleClick={props.handleEditTodo(todo)}
+        handleDelete={props.handleDeleteTodo(todo)}
+        index={index}
+    />);
+const Todo = (props) =>
+    <li
+        className={'todo priority-' + props.priority}
+        key={(Date.now() + props.index).toString(36)}
+    >
+        <div className='delete' onClick={props.handleDelete}/>
+        <div
+            className='todo-body'
+            onClick={props.handleClick}
+        >
+            <div className='name'>{props.name}</div>
+            <div className='description'>{props.description}</div>
+            <div className='due-date'>{props.dueDate}</div>
+        </div>
+    </li>;
+const TodoAdder = (props) =>
+    <li
+        className='todo priority-5'
+        onClick={props.handleClick}
+        key={(Date.now() - 1).toString(36)}
+    >
+        + todo
+    </li>;
+
 const ProjectDialogue = (props) =>
     <div className='veil'>
         <Formik
@@ -123,71 +242,6 @@ const TodoDialogue = (props) =>
     </div>;
 TodoDialogue.defaultProps = {name: '', description: '', dueDate: '', priority: 3};
 
-const ListProjects = (props) => props.projects.map((project, index) =>
-    <Project
-        active={project === props.activeProject}
-        name={project.name}
-        handleActiveClick={props.editProject}
-        handleClick={props.handleSwitchProject(project)}
-        index={index}
-    />);
-const Project = (props) => props.active ?
-    <li
-        className='active'
-        onClick={props.handleActiveClick}
-        key={(Date.now() + props.index).toString(36)}
-    >
-        {props.name}
-    </li>
-    : <li
-        onClick={props.handleClick}
-        key={(Date.now() + props.index).toString(36)}
-    >
-        {props.name}
-    </li>;
-const ProjectAdder = (props) =>
-    <li
-        id='new-project'
-        onClick={props.handleClick}
-        key={(Date.now() - 1).toString(36)}
-    >
-        + project
-    </li>;
-
-const ListTodos = (props) => props.todos.map((todo, index) =>
-    <Todo
-        name={todo.name}
-        description={todo.description}
-        dueDate={todo.dueDate}
-        priority={todo.priority}
-        handleClick={props.handleEditTodo(todo)}
-        handleDelete={props.handleDeleteTodo(todo)}
-        index={index}
-    />);
-const Todo = (props) =>
-    <li
-        className={'todo priority-' + props.priority}
-        key={(Date.now() + props.index).toString(36)}
-    >
-        <div className='delete' onClick={props.handleDelete}/>
-        <div
-            className='todo-body'
-            onClick={props.handleClick}
-        >
-            <div className='name'>{props.name}</div>
-            <div className='description'>{props.description}</div>
-            <div className='due-date'>{props.dueDate}</div>
-        </div>
-    </li>;
-const TodoAdder = (props) =>
-    <li
-        className='todo priority-5'
-        onClick={props.handleClick}
-        key={(Date.now() - 1).toString(36)}
-    >
-        + todo
-    </li>;
-
 const App = () => {
     const [projects, setProjects] = React.useState([project('Default')]);
     const [activeProject, setActiveProject] = React.useState(null);
@@ -195,6 +249,7 @@ const App = () => {
     const [projectDialogue, setProjectDialogue] = React.useState(false);
     const [todoUnderEdit, setTodoUnderEdit] = React.useState(null);
     const [todoDialogue, setTodoDialogue] = React.useState(false);
+    const [sortBy, setSortBy] = React.useState('name');
     const [query, setQuery] = React.useState('');
 
     const toggleProjectDialogue = () => setProjectDialogue(!projectDialogue);
@@ -251,6 +306,7 @@ const App = () => {
         cancelEditTodo();
     };
 
+    const handleSortChange = (event) => setSortBy(event.target.value);
     const handleQueryChange = (event) => setQuery(event.target.value);
     const filterTodos = () => {
         const lowerCaseQuery = query.toLowerCase();
@@ -276,22 +332,23 @@ const App = () => {
                 </nav>
             </header>
             <main>
-                <input
-                    id='query-box'
-                    type='text'
-                    placeholder='query'
-                    onChange={handleQueryChange}
-                />
+                <div id='queries'>
+                    <SortForm
+                        sortBy={sortBy}
+                        handleChange={handleSortChange}
+                    />
+                    <Query handleChange={handleQueryChange}/>
+                </div>
                 <ul>
                     {activeProject
                     && (query ?
                         <ListTodos
-                            todos={filterTodos()}
+                            todos={filterTodos().sort((a, b) => a[sortBy] < b[sortBy] ? -1 : 1)}
                             handleEditTodo={handleEditTodo}
                             handleDeleteTodo={handleDeleteTodo}
                         />
                         : <ListTodos
-                            todos={activeProject.list}
+                            todos={activeProject.list.sort((a, b) => a[sortBy] < b[sortBy] ? -1 : 1)}
                             handleEditTodo={handleEditTodo}
                             handleDeleteTodo={handleDeleteTodo}
                         />)}
