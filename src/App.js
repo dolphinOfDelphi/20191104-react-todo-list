@@ -8,9 +8,9 @@ const todo = (name, description, dueDate, priority) => ({name, description, dueD
 const ProjectDialogue = (props) =>
     <div className='veil'>
         <Formik
-            initialValues={{name: ''}}
+            initialValues={{name: props.name}}
             validate={values => values.name ? {} : {name: '^ name required'}}
-            onSubmit={values => props.addProject(values.name)}
+            onSubmit={values => props.modifyProject(values.name)}
         >
             {({
                   values,
@@ -46,10 +46,11 @@ const ProjectDialogue = (props) =>
             )}
         </Formik>
     </div>;
+ProjectDialogue.defaultProps = {name: ''};
 const TodoDialogue = (props) =>
     <div className='veil'>
         <Formik
-            initialValues={{name: '', description: '', dueDate: '', priority: 3}}
+            initialValues={{name: props.name, description: props.description, dueDate: props.dueDate, priority: props.priority}}
             validate={values => {
                 const errors = {};
                 if (!values.name) errors.name = '^ name required';
@@ -57,7 +58,7 @@ const TodoDialogue = (props) =>
                 if (values.priority < 1 || values.priority > 5) errors.priority = '^ priority must be between 1 and 5';
                 return errors;
             }}
-            onSubmit={values => props.addTodo(values.name, values.description, values.dueDate, values.priority)}
+            onSubmit={values => props.modifyTodo(values.name, values.description, values.dueDate, values.priority)}
         >
             {({
                   values,
@@ -115,11 +116,12 @@ const TodoDialogue = (props) =>
             )}
         </Formik>
     </div>;
+TodoDialogue.defaultProps = {name: '', description: '', dueDate: '', priority: 3};
 
 const Project = (props) => props.active ?
     <li
         className='active'
-        onClick={props.handleClick}
+        onClick={props.handleActiveClick}
         key={(Date.now() + props.index).toString(36)}
     >
         {props.name}
@@ -133,7 +135,7 @@ const Project = (props) => props.active ?
 const Todo = (props) =>
     <li
         className={'todo priority-' + props.priority}
-        // onClick={props.handleClick}
+        onClick={props.handleClick}
         key={(Date.now() + props.index).toString(36)}
     >
         <div className='name'>{props.name}</div>
@@ -144,17 +146,33 @@ const Todo = (props) =>
 const App = () => {
     const [projects, setProjects] = React.useState([project('Default')]);
     const [activeProject, setActiveProject] = React.useState(null);
+    const [editingProject, setEditingProject] = React.useState(false);
+    const [todoUnderEdit, setTodoUnderEdit] = React.useState(null);
     const [projectDialogue, setProjectDialogue] = React.useState(false);
     const [todoDialogue, setTodoDialogue] = React.useState(false);
 
     const toggleProjectDialogue = () => setProjectDialogue(!projectDialogue);
     const toggleTodoDialogue = () => setTodoDialogue(!todoDialogue);
+
+    const editProject = () => setEditingProject(true);
+    const cancelEditProject = () => setEditingProject(false);
     const addProject = (name) => {
         const newProjects = projects.slice();
         newProjects.push(project(name));
         setProjects(newProjects);
         toggleProjectDialogue();
     };
+    const updateProject = (name) => {
+        const newProjects = projects.slice();
+        const newProject = newProjects.find(project => project === activeProject);
+        newProject.name = name;
+        setProjects(newProjects);
+        cancelEditProject();
+    };
+    const switchProject = project => () => setActiveProject(project);
+
+    const editTodo = todo => () => setTodoUnderEdit(todo);
+    const cancelEditTodo = () => setTodoUnderEdit(null);
     const addTodo = (name, description, dueDate, priority) => {
         const newProjects = projects.slice();
         const newProject = newProjects.find(project => project === activeProject);
@@ -163,8 +181,15 @@ const App = () => {
         setActiveProject(newProject);
         toggleTodoDialogue();
     };
-
-    const switchProject = project => () => setActiveProject(project);
+    const updateTodo = (name, description, dueDate, priority) => {
+        const newProjects = projects.slice();
+        const newProject = newProjects.find(project => project === activeProject);
+        const todoIndex = newProject.list.findIndex(todo => todo === todoUnderEdit);
+        newProject.list[todoIndex] = todo(name, description, dueDate, priority);
+        setProjects(newProjects);
+        setActiveProject(newProject);
+        cancelEditTodo();
+    };
 
     return (
         <>
@@ -176,6 +201,7 @@ const App = () => {
                             <Project
                                 active={project === activeProject}
                                 name={project.name}
+                                handleActiveClick={editProject}
                                 handleClick={switchProject(project)}
                                 index={index}
                             />)
@@ -198,7 +224,7 @@ const App = () => {
                             description={todo.description}
                             dueDate={todo.dueDate}
                             priority={todo.priority}
-                            // handleClick={editTodo(todo)}
+                            handleClick={editTodo(todo)}
                             index={index}
                         />)
                     }
@@ -212,12 +238,25 @@ const App = () => {
                 </ul>
             </main>
             {projectDialogue && <ProjectDialogue
-                addProject={addProject}
+                modifyProject={addProject}
                 handleCancel={toggleProjectDialogue}
             />}
+            {editingProject && <ProjectDialogue
+                name={activeProject.name}
+                modifyProject={updateProject}
+                handleCancel={cancelEditProject}
+            />}
             {todoDialogue && <TodoDialogue
-                addTodo={addTodo}
+                modifyTodo={addTodo}
                 handleCancel={toggleTodoDialogue}
+            />}
+            {todoUnderEdit && <TodoDialogue
+                name={todoUnderEdit.name}
+                description={todoUnderEdit.description}
+                dueDate={todoUnderEdit.dueDate}
+                priority={todoUnderEdit.priority}
+                modifyTodo={updateTodo}
+                handleCancel={cancelEditTodo}
             />}
         </>
     );
