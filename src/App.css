@@ -106,7 +106,7 @@ nav li.active {
     background-color: #ccc;
 }
 
-.query-box {
+#query-box {
     background-color: white;
     display: block;
     margin: 1rem auto;
@@ -124,10 +124,24 @@ main > ul {
 
 .todo {
     flex: 1 1 3rem;
+    max-width: 768px;
     display: flex;
     margin: 0.2rem;
+    border-radius: 10px;
     padding: 0.5rem;
-    max-width: 768px;
+}
+
+.todo:hover {
+    animation: grow 0.4s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+@keyframes grow {
+    0% {
+        border-radius: 10px;
+    }
+    100% {
+        border-radius: 0;
+    }
 }
 
 .todo .delete {
@@ -178,6 +192,18 @@ main > ul {
 .todo-body .description {
     color: #444;
     grid-area: description;
+}
+
+#delete-project {
+    background-color: red;
+    display: block;
+    margin: 1rem auto;
+    padding: 0 1rem;
+    border-radius: 5px;
+}
+
+#delete-project:hover {
+    color: white;
 }
 
 @media screen and (min-width: 768px) {

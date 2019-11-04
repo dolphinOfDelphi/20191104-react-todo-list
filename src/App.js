@@ -216,6 +216,12 @@ const App = () => {
         cancelEditProject();
     };
     const handleSwitchProject = project => () => setActiveProject(project);
+    const deleteProject = () => {
+        const newProjects = projects.slice();
+        newProjects.splice(newProjects.indexOf(activeProject), 1);
+        setProjects(newProjects);
+        setActiveProject(null);
+    };
 
     const handleEditTodo = todo => () => setTodoUnderEdit(todo);
     const cancelEditTodo = () => setTodoUnderEdit(null);
@@ -230,7 +236,7 @@ const App = () => {
     const updateTodo = (name, description, dueDate, priority) => {
         const newProjects = projects.slice();
         const newProject = newProjects.find(project => project === activeProject);
-        const todoIndex = newProject.list.findIndex(todo => todo === todoUnderEdit);
+        const todoIndex = newProject.list.indexOf(todoUnderEdit);
         newProject.list[todoIndex] = todo(name, description, dueDate, priority);
         setProjects(newProjects);
         setActiveProject(newProject);
@@ -239,7 +245,7 @@ const App = () => {
     const handleDeleteTodo = todo => () => {
         const newProjects = projects.slice();
         const newProject = newProjects.find(project => project === activeProject);
-        newProject.list.splice(newProject.list.findIndex(item => item === todo), 1);
+        newProject.list.splice(newProject.list.indexOf(todo), 1);
         setProjects(newProjects);
         setActiveProject(newProject);
         cancelEditTodo();
@@ -271,7 +277,7 @@ const App = () => {
             </header>
             <main>
                 <input
-                    className='query-box'
+                    id='query-box'
                     type='text'
                     placeholder='query'
                     onChange={handleQueryChange}
@@ -291,6 +297,13 @@ const App = () => {
                         />)}
                     {activeProject && !query && <TodoAdder handleClick={toggleTodoDialogue}/>}
                 </ul>
+                {activeProject
+                && <button
+                    id='delete-project'
+                    onClick={deleteProject}
+                >
+                    Delete project
+                </button>}
             </main>
             {projectDialogue && <ProjectDialogue
                 modifyProject={addProject}
