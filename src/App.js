@@ -243,7 +243,7 @@ const TodoDialogue = (props) =>
 TodoDialogue.defaultProps = {name: '', description: '', dueDate: '', priority: 3};
 
 const App = () => {
-    const [projects, setProjects] = React.useState([project('Default')]);
+    const [projects, setProjects] = React.useState([]);
     const [activeProject, setActiveProject] = React.useState(null);
     const [editingProject, setEditingProject] = React.useState(false);
     const [projectDialogue, setProjectDialogue] = React.useState(false);
@@ -251,60 +251,6 @@ const App = () => {
     const [todoDialogue, setTodoDialogue] = React.useState(false);
     const [sortBy, setSortBy] = React.useState('name');
     const [query, setQuery] = React.useState('');
-
-    const toggleProjectDialogue = () => setProjectDialogue(!projectDialogue);
-    const toggleTodoDialogue = () => setTodoDialogue(!todoDialogue);
-
-    const editProject = () => setEditingProject(true);
-    const cancelEditProject = () => setEditingProject(false);
-    const addProject = (name) => {
-        const newProjects = projects.slice();
-        newProjects.push(project(name));
-        setProjects(newProjects);
-        toggleProjectDialogue();
-    };
-    const updateProject = (name) => {
-        const newProjects = projects.slice();
-        const newProject = newProjects.find(project => project === activeProject);
-        newProject.name = name;
-        setProjects(newProjects);
-        cancelEditProject();
-    };
-    const handleSwitchProject = project => () => setActiveProject(project);
-    const deleteProject = () => {
-        const newProjects = projects.slice();
-        newProjects.splice(newProjects.indexOf(activeProject), 1);
-        setProjects(newProjects);
-        setActiveProject(null);
-    };
-
-    const handleEditTodo = todo => () => setTodoUnderEdit(todo);
-    const cancelEditTodo = () => setTodoUnderEdit(null);
-    const addTodo = (name, description, dueDate, priority) => {
-        const newProjects = projects.slice();
-        const newProject = newProjects.find(project => project === activeProject);
-        newProject.list.unshift(todo(name, description, dueDate, priority));
-        setProjects(newProjects);
-        setActiveProject(newProject);
-        toggleTodoDialogue();
-    };
-    const updateTodo = (name, description, dueDate, priority) => {
-        const newProjects = projects.slice();
-        const newProject = newProjects.find(project => project === activeProject);
-        const todoIndex = newProject.list.indexOf(todoUnderEdit);
-        newProject.list[todoIndex] = todo(name, description, dueDate, priority);
-        setProjects(newProjects);
-        setActiveProject(newProject);
-        cancelEditTodo();
-    };
-    const handleDeleteTodo = todo => () => {
-        const newProjects = projects.slice();
-        const newProject = newProjects.find(project => project === activeProject);
-        newProject.list.splice(newProject.list.indexOf(todo), 1);
-        setProjects(newProjects);
-        setActiveProject(newProject);
-        cancelEditTodo();
-    };
 
     const handleSortChange = (event) => setSortBy(event.target.value);
     const handleQueryChange = (event) => setQuery(event.target.value);
@@ -314,6 +260,67 @@ const App = () => {
             todo.name.toLowerCase().includes(lowerCaseQuery)
             || todo.description.toLowerCase().includes(lowerCaseQuery));
     };
+
+    const update = (newProjects, newActiveProject) => {
+        setProjects(newProjects);
+        setActiveProject(newActiveProject);
+        localStorage.setItem('projects', JSON.stringify(projects));
+    };
+
+    const editProject = () => setEditingProject(true);
+    const cancelEditProject = () => setEditingProject(false);
+    const addProject = (name) => {
+        const newProjects = projects.slice();
+        const newProject = project(name);
+        newProjects.push(newProject);
+        update(newProjects, newProject);
+        toggleProjectDialogue();
+    };
+    const updateProject = (name) => {
+        const newProjects = projects.slice();
+        const newProject = newProjects.find(project => project === activeProject);
+        newProject.name = name;
+        update(newProjects, newProject);
+        cancelEditProject();
+    };
+    const handleSwitchProject = project => () => setActiveProject(project);
+    const deleteProject = () => {
+        const newProjects = projects.slice();
+        newProjects.splice(newProjects.indexOf(activeProject), 1);
+        update(newProjects, null);
+    };
+
+    const handleEditTodo = todo => () => setTodoUnderEdit(todo);
+    const cancelEditTodo = () => setTodoUnderEdit(null);
+    const addTodo = (name, description, dueDate, priority) => {
+        const newProjects = projects.slice();
+        const newProject = newProjects.find(project => project === activeProject);
+        newProject.list.unshift(todo(name, description, dueDate, priority));
+        update(newProjects, newProject);
+        toggleTodoDialogue();
+    };
+    const updateTodo = (name, description, dueDate, priority) => {
+        const newProjects = projects.slice();
+        const newProject = newProjects.find(project => project === activeProject);
+        const todoIndex = newProject.list.indexOf(todoUnderEdit);
+        newProject.list[todoIndex] = todo(name, description, dueDate, priority);
+        update(newProjects, newProject);
+        cancelEditTodo();
+    };
+    const handleDeleteTodo = todo => () => {
+        const newProjects = projects.slice();
+        const newProject = newProjects.find(project => project === activeProject);
+        newProject.list.splice(newProject.list.indexOf(todo), 1);
+        update(newProjects, newProject);
+        cancelEditTodo();
+    };
+
+    const toggleProjectDialogue = () => setProjectDialogue(!projectDialogue);
+    const toggleTodoDialogue = () => setTodoDialogue(!todoDialogue);
+
+    React.useEffect(() => {
+        setProjects(JSON.parse(localStorage.getItem('projects')) || [project('Default')]);
+    }, []);
 
     return (
         <>
@@ -355,6 +362,7 @@ const App = () => {
                     {activeProject && !query && <TodoAdder handleClick={toggleTodoDialogue}/>}
                 </ul>
                 {activeProject
+                && !query
                 && <button
                     id='delete-project'
                     onClick={deleteProject}
