@@ -33,6 +33,8 @@ header {
     grid-area: name;
     font-family: 'Montserrat', sans-serif;
     font-size: large;
+    font-weight: bold;
+    padding: 1rem;
 }
 
 nav {

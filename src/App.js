@@ -1,58 +1,81 @@
 import React from 'react';
+import {Formik} from 'formik';
 import './App.css';
 
-const NewProjectPopup = (props) => {
-    return (
-        <div className='veil'>
-            <form className='form'>
-                <input
-                    type='text'
-                    placeholder='Project name'
-                    required={true}
-                    onChange={props.handleNewProjectNameChange}
-                    value={props.newProjectName}
-                />
-                <button
-                    type='submit'
-                    className='submit'
-                    onClick={props.handleCreateNewProject}
+const project = (name) => ({name, list: []});
+
+const NewProjectPopup = (props) =>
+    <div className='veil'>
+        <Formik
+            initialValues={{name: ''}}
+            validate={values => values.name ? {} : {name: '^name required'}}
+            onSubmit={values => props.addProject(values.name)}
+        >
+            {({
+                  values,
+                  errors,
+                  handleChange,
+                  handleSubmit,
+              }) => (
+                <form
+                    className='form'
+                    onSubmit={handleSubmit}
                 >
-                    Submit
-                </button>
-                <button
-                    className='cancel'
-                    onClick={props.handleCancelNewProject}
-                >
-                    Cancel
-                </button>
-            </form>
-        </div>
-    );
-};
+                    <input
+                        type='text'
+                        name='name'
+                        placeholder='Project name'
+                        onChange={handleChange}
+                        value={values.name}
+                    />
+                    {errors.name}
+                    <button
+                        type='submit'
+                        className='submit'
+                    >
+                        Submit
+                    </button>
+                    <button
+                        className='cancel'
+                        onClick={props.handleCancel}
+                    >
+                        Cancel
+                    </button>
+                </form>
+            )}
+        </Formik>
+
+    </div>;
+
+const Project = (props) => props.active ?
+    <li
+        className='active'
+        onClick={props.handleClick}
+        key={(Date.now() + props.index).toString(36)}
+    >
+        {props.name}
+    </li>
+    : <li
+        onClick={props.handleClick}
+        key={(Date.now() + props.index).toString(36)}
+    >
+        {props.name}
+    </li>;
 
 const App = () => {
-    const [newProjectPopup, setNewProjectPopup] = React.useState(false);
-    const [input, setInput] = React.useState({newProjectName: ''});
-    const [projects, setProjects] = React.useState([]);
+    const [projects, setProjects] = React.useState([project('Default')]);
+    const [activeProject, setActiveProject] = React.useState(null);
+    const [projectDialogue, setProjectDialogue] = React.useState(false);
 
-    const handleNewProject = () => {
-        setNewProjectPopup(true);
-    };
-    const handleNewProjectNameChange = (event) => setInput({newProjectName: event.target.value});
-    const handleCreateNewProject = () => {
+    const toggleProjectDialogue = () => setProjectDialogue(!projectDialogue);
+    const addProject = (name) => {
         const newProjects = projects.slice();
-        newProjects.push(
-            {
-                name: input.newProjectName,
-                list: [],
-            });
+        newProjects.push(project(name));
         setProjects(newProjects);
-        setNewProjectPopup(false);
-        setInput({newProjectName: ''});
+        toggleProjectDialogue();
     };
-    const handleCancelNewProject = () => {
-        setNewProjectPopup(false);
-    };
+
+    const switchProject = project => () => setActiveProject(project);
 
     return (
         <>
@@ -60,16 +83,26 @@ const App = () => {
                 <div id='app-name'>To-do</div>
                 <nav>
                     <ul>
-                        {projects.map(project => <li key={Date.now().toString(36)}>{project.name}</li>)}
-                        <li id='new-project' onClick={handleNewProject}>+ project</li>
+                        {projects.map((project, index) =>
+                            <Project
+                                active={project === activeProject}
+                                name={project.name}
+                                handleClick={switchProject(project)}
+                                index={index}/>)
+                        }
+                        <li
+                            id='new-project'
+                            onClick={toggleProjectDialogue}
+                            key={(Date.now() - 1).toString(36)}
+                        >
+                            + project
+                        </li>
                     </ul>
                 </nav>
             </header>
-            {newProjectPopup && <NewProjectPopup
-                newProjectName={input.newProjectName}
-                handleNewProjectNameChange={handleNewProjectNameChange}
-                handleCreateNewProject={handleCreateNewProject}
-                handleCancelNewProject={handleCancelNewProject}
+            {projectDialogue && <NewProjectPopup
+                addProject={addProject}
+                handleCancel={toggleProjectDialogue}
             />}
         </>
     );
