@@ -110,6 +110,7 @@ nav li.active {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-wrap: wrap;
     margin: 1rem auto;
 }
 
@@ -216,7 +217,7 @@ main > ul {
     color: white;
 }
 
-@media screen and (min-width: 768px) {
+@media screen and (min-width: 600px) {
     header {
         grid-template-columns: 1fr 3fr;
         grid-template-areas: 'name navigation';
